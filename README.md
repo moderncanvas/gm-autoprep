@@ -14,7 +14,7 @@ Obsidian vault, checks what's been planted and what's due to pay off, writes a
 scene-by-scene prep doc — and then builds the session into Foundry: full NPC stat blocks,
 portraits and tokens, handouts, and battle maps with walls, doors, windows and lights.
 
-> **Status: early (0.1).** Everything below works and is used on a real campaign, but expect
+> **Status: early (0.2).** Everything below works and is used on a real campaign, but expect
 > rough edges. D&D 5e is the best-supported system so far.
 > See [Roadmap](#roadmap).
 
@@ -50,6 +50,8 @@ clones, scenes, journals, uploads, tokens, chat log), `map_*` (any map image →
 | Campaign vault template | `vault-template/` | MIT |
 | Foundry module — typed JSON-RPC methods | `module/` | MIT |
 | Hub — authenticated relay to the one serving Foundry client | `hub/` | AGPL-3.0 |
+| Automation GM — a headless Foundry client that stays logged in and configures itself | `automation/` | AGPL-3.0 |
+| Docker packaging for the hub + automation GM | `compose.yml`, `.env.example` | AGPL-3.0 |
 | Protocol · map guide | [docs/PROTOCOL.md](docs/PROTOCOL.md) · [docs/MAPS.md](docs/MAPS.md) | — |
 
 Design choices worth knowing:
@@ -64,30 +66,39 @@ Design choices worth knowing:
 
 ## Install
 
-You need Foundry VTT v12+ (tested on v14.365 with dnd5e 5.3.3), Node 20+, and Claude Code.
+You need Foundry VTT v12+ (tested on v14.365 with dnd5e 5.3.3), Claude Code, and — for the
+Foundry-side pieces — Docker (or Node 20+ and Chromium, see below).
 
-**1. On the machine that runs Foundry** — the hub and the module:
+**1. The Foundry module.** In Foundry: *Add-on Modules → Install Module*, paste this manifest URL:
+
+```
+https://github.com/moderncanvas/gm-autoprep/releases/latest/download/module.json
+```
+
+Enable **GM AutoPrep** in your world, and create a user for the assistant — e.g. **AutoPrep** —
+with the **Gamemaster** role and a password.
+
+**2. The hub and the automation GM** — on any machine that can reach your Foundry (the Foundry host
+itself is simplest):
 
 ```bash
 git clone https://github.com/moderncanvas/gm-autoprep && cd gm-autoprep
-cp -r module /path/to/foundrydata/Data/modules/gm-autoprep     # then restart Foundry
-sudo AUTOPREP_HOST=0.0.0.0 deploy/install-hub.sh "$PWD"          # omit AUTOPREP_HOST if Claude runs on this machine
-sudo cat /etc/gm-autoprep/token
+cp .env.example .env          # set FOUNDRY_URL, AUTOPREP_USER, AUTOPREP_PASSWORD
+docker compose up -d --build
+docker compose exec hub cat /data/token
 ```
 
-In your world: enable **GM AutoPrep**, set **Automation user** to the GM account that should serve
-(a dedicated GM account that stays logged in is ideal), and — logged in as that user — paste the token
-into the module settings.
+The automation GM logs in as that user, stays logged in so the assistant works when nobody has Foundry
+open, and configures the module for itself — no settings to paste. It rejoins after Foundry restarts
+and recovers from browser crashes. `docker compose logs automation` shows what it's doing.
 
-**2. On the machine where you run Claude Code:**
+**3. Claude Code** — on the machine where you run it:
 
 ```bash
 mkdir -p ~/.gm-autoprep && chmod 700 ~/.gm-autoprep
-# paste the token into ~/.gm-autoprep/token, then chmod 600 it, and create ~/.gm-autoprep/config.json:
-#   { "hubUrl": "http://<foundry-host>:30777", "archivistApiKey": "<optional>" }
+# paste the token into ~/.gm-autoprep/token (chmod 600), and create ~/.gm-autoprep/config.json:
+#   { "hubUrl": "http://<hub machine>:30777", "archivistApiKey": "<optional>" }
 ```
-
-Then in Claude Code:
 
 ```
 /plugin marketplace add moderncanvas/gm-autoprep
@@ -97,11 +108,27 @@ Then in Claude Code:
 Restart Claude Code, open it in the folder where you want your campaign vault, and run `/gm-setup`.
 The MCP server installs its own dependencies on first start (about 20 seconds).
 
-The hub listens on your LAN when installed with `AUTOPREP_HOST=0.0.0.0`; every call needs the token.
-Put TLS in front before exposing it any further.
+**Check it:** `AUTOPREP_URL=http://<hub machine>:30777 AUTOPREP_TOKEN_FILE=~/.gm-autoprep/token node hub/test/smoke.mjs`
+runs 23 end-to-end checks against your world and cleans up after itself.
 
-**Check it all works:** `AUTOPREP_TOKEN_FILE=/etc/gm-autoprep/token node hub/test/smoke.mjs` on the
-Foundry host runs 23 end-to-end checks against your world and cleans up after itself.
+<details>
+<summary>Without Docker</summary>
+
+On the Foundry host (Linux, systemd):
+
+```bash
+sudo AUTOPREP_HOST=0.0.0.0 deploy/install-hub.sh "$PWD"      # hub as a service; token in /etc/gm-autoprep/token
+cd automation && npm install
+FOUNDRY_URL=http://127.0.0.1:30000 AUTOPREP_USER=AutoPrep AUTOPREP_PASSWORD=… \
+  AUTOPREP_TOKEN_FILE=/etc/gm-autoprep/token AUTOPREP_HUB_WS=ws://127.0.0.1:30777/foundry \
+  CHROMIUM_PATH=/usr/bin/chromium node src/automation.mjs      # wrap in a systemd unit to keep it running
+```
+
+The automation GM uses about 1.4 GB of RAM (it's a full Foundry client in headless Chromium).
+</details>
+
+The hub listens on port 30777 and every call needs the token. Keep it on your LAN or put TLS in front
+before exposing it further.
 
 ## Roadmap
 
@@ -109,8 +136,8 @@ Foundry host runs 23 end-to-end checks against your world and cleans up after it
 2. ✅ MCP server
 3. ✅ Map pipeline — any map image → walls, doors, windows, lights, hidden tokens
 4. ✅ Claude Code plugin: `/gm-setup`, `/gm-log`, `/gm-prep` + campaign vault template + Archivist tools
-5. Packaged headless automation GM (so the assistant works when nobody has Foundry open) and
-   `docker compose up` for the Foundry-side pieces
+5. ✅ Automation GM that stays logged in and configures itself, `docker compose up`, and one-link
+   module install from GitHub releases
 6. Automatic first-pass wall detection for maps
 7. More systems: `references/<system>.md` for Pathfinder 2e and others (contributions welcome)
 

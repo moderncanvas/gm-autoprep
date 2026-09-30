@@ -21,6 +21,9 @@ Hooks.once("init", () => {
   // v13+ has server-stored per-user settings; older cores fall back to this browser only.
   game.settings.register(ID, "token", { name: "AUTOPREP.token.name", hint: "AUTOPREP.token.hint",
     scope: major >= 13 ? "user" : "client", config: true, type: String, default: "", requiresReload: true });
+  // Per-browser override of the hub address: the automation GM (e.g. in Docker) often reaches the
+  // hub by a different address than any other machine would. Set by the automation client itself.
+  game.settings.register(ID, "hubUrlLocal", { scope: "client", config: false, type: String, default: "" });
   game.settings.register(ID, "allowWrites", { name: "AUTOPREP.allowWrites.name", hint: "AUTOPREP.allowWrites.hint",
     scope: "world", config: true, type: Boolean, default: true });
 });
@@ -41,7 +44,7 @@ function connect(delay = 0) {
 }
 
 function openSocket() {
-  const url = setting("hubUrl"), token = setting("token");
+  const url = setting("hubUrlLocal") || setting("hubUrl"), token = setting("token");
   if (!url || !token) { state.status = "unconfigured"; state.detail = "set Hub URL and Hub token"; return; }
   let ws;
   try { ws = new WebSocket(url); } catch (e) { state.status = "error"; state.detail = String(e); return connect(30000); }

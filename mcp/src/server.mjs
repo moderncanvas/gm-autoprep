@@ -43,7 +43,7 @@ async function rpc(method, params = {}) {
 const text = (v) => ({ content: [{ type: "text", text: typeof v === "string" ? v : JSON.stringify(v, null, 2) }] });
 const fail = (e) => ({ isError: true, content: [{ type: "text", text: String(e.message ?? e) }] });
 
-const server = new McpServer({ name: "gm-autoprep", version: "0.1.0" });
+const server = new McpServer({ name: "gm-autoprep", version: "0.2.0" });
 
 // tool(name, description, input shape, hub method or handler, annotations)
 function tool(name, description, shape, target, annotations = {}) {

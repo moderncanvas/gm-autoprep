@@ -1,0 +1,10 @@
+{
+  "name": "gm-autoprep-automation",
+  "version": "0.2.0",
+  "description": "Keeps a headless GM logged into Foundry VTT so GM AutoPrep works when nobody has Foundry open.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": { "gm-autoprep-automation": "src/automation.mjs" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "puppeteer-core": "^24.0.0" }
+}

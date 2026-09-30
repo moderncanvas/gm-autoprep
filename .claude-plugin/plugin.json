@@ -1,10 +1,20 @@
 {
   "name": "gm-autoprep",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI session prep and automatic asset building for game masters: recaps from your recordings and Foundry chat log, scene-by-scene prep that respects your plants and reveals, and NPCs, tokens, handouts and battle maps built straight into Foundry VTT.",
-  "author": { "name": "Jeremy Wise", "url": "https://github.com/moderncanvas" },
+  "author": {
+    "name": "Jeremy Wise",
+    "url": "https://github.com/moderncanvas"
+  },
   "homepage": "https://github.com/moderncanvas/gm-autoprep",
   "repository": "https://github.com/moderncanvas/gm-autoprep",
   "license": "AGPL-3.0-only",
-  "keywords": ["foundry-vtt", "ttrpg", "dnd", "game-master", "session-prep", "battle-maps"]
+  "keywords": [
+    "foundry-vtt",
+    "ttrpg",
+    "dnd",
+    "game-master",
+    "session-prep",
+    "battle-maps"
+  ]
 }

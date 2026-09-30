@@ -1,0 +1,31 @@
+# GM AutoPrep — the Foundry-side pieces: the hub and the automation GM.
+# Your Foundry runs wherever it already does (bare metal, another container, a host you pay for
+# as long as this machine can reach it). Copy .env.example to .env, fill it in, then:
+#   docker compose up -d --build
+#   docker compose exec hub cat /data/token     # this goes in ~/.gm-autoprep/token on the Claude machine
+services:
+  hub:
+    build: { context: ., dockerfile: hub/Dockerfile }
+    environment:
+      AUTOPREP_TOKEN: ${AUTOPREP_TOKEN:-}          # leave empty to generate one in the volume
+    ports: ["${AUTOPREP_PORT:-30777}:30777"]
+    volumes: [autoprep-data:/data]
+    restart: unless-stopped
+
+  automation:
+    build: { context: ., dockerfile: automation/Dockerfile }
+    depends_on: [hub]
+    environment:
+      FOUNDRY_URL: ${FOUNDRY_URL:-http://host.docker.internal:30000}
+      AUTOPREP_USER: ${AUTOPREP_USER:?set AUTOPREP_USER in .env — the Foundry GM account to log in as}
+      AUTOPREP_PASSWORD: ${AUTOPREP_PASSWORD:-}
+      AUTOPREP_TOKEN: ${AUTOPREP_TOKEN:-}
+      AUTOPREP_HUB_WS: ws://hub:30777/foundry
+    volumes: [autoprep-data:/data:ro]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    shm_size: 1gb
+    mem_limit: 2500m                               # a Foundry client in Chromium uses ~1.4 GB
+    restart: unless-stopped
+
+volumes:
+  autoprep-data:

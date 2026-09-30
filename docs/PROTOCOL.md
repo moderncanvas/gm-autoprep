@@ -23,6 +23,8 @@ One shared secret, the **hub token** (32 random bytes, hex). The hub reads it fr
 - API callers send `Authorization: Bearer <token>`.
 - The module sends it in its `hello` frame. The module stores it in a **user-scoped**
   setting on the automation user, so player clients never receive it.
+- The module dials `hubUrlLocal` (a per-browser setting the automation GM writes for itself) if
+  set, otherwise the world's `hubUrl`.
 
 ## Exactly one serving client
 

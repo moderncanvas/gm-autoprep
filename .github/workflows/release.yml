@@ -1,0 +1,28 @@
+# Push a tag like v0.2.0 -> builds the Foundry module zip and publishes a GitHub release.
+# Foundry installs from the manifest URL:
+#   https://github.com/moderncanvas/gm-autoprep/releases/latest/download/module.json
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  module:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Stamp version and download URL into module.json
+        run: |
+          V="${GITHUB_REF_NAME#v}"
+          jq --arg v "$V" --arg d "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/gm-autoprep-module.zip" \
+             '.version = $v | .download = $d' module/module.json > module.json
+          cp module.json module/module.json
+      - name: Zip the module
+        run: cd module && zip -r ../gm-autoprep-module.zip . -x '*.DS_Store'
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            module.json
+            gm-autoprep-module.zip
+          generate_release_notes: true

@@ -14,8 +14,8 @@ Obsidian vault, checks what's been planted and what's due to pay off, writes a
 scene-by-scene prep doc — and then builds the session into Foundry: full NPC stat blocks,
 portraits and tokens, handouts, and battle maps with walls, doors, windows and lights.
 
-> **Status: early (0.4).** Everything below works and is used on a real campaign, but expect
-> rough edges. D&D 5e is the best-supported system so far.
+> **Status: early (0.5).** Everything below works and is used on a real campaign, but expect
+> rough edges. Built-in references for D&D 5e and Pathfinder 2e; any system works from your own notes.
 > See [Roadmap](#roadmap).
 
 ## What a GM gets
@@ -157,8 +157,8 @@ before exposing it further.
    module install from GitHub releases
 6. ✅ Automatic first-draft wall detection (`map_detect_walls`) — measured, honest numbers in [docs/MAPS.md](docs/MAPS.md)
 7. ✅ Any system, with or without Foundry, via `campaign.yaml` (`system`, `log`, `paths`)
-8. Built-in references for more systems — `skills/gm-prep/references/<system>.md` for Pathfinder 2e and
-   others (contributions welcome; a campaign's own rules notes already work today)
+8. Built-in references: ✅ D&D 5e, ✅ Pathfinder 2e — more welcome as `skills/gm-prep/references/<system>.md`
+   (named by Foundry system id; a campaign's own rules notes already work for anything)
 
 ## Rules of the road
 

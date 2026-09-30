@@ -1,11 +1,14 @@
 # GM AutoPrep — the Foundry-side pieces: the hub and the automation GM.
 # Your Foundry runs wherever it already does (bare metal, another container, a host you pay for
 # as long as this machine can reach it). Copy .env.example to .env, fill it in, then:
-#   docker compose up -d --build
-#   docker compose exec hub cat /data/token     # this goes in ~/.gm-autoprep/token on the Claude machine
+#   docker compose up -d                        # pulls the pre-built images (amd64 + arm64)
+#   docker compose exec hub cat /data/token
+# To build from source instead: docker compose up -d --build     # this goes in ~/.gm-autoprep/token on the Claude machine
 services:
   hub:
+    image: ghcr.io/moderncanvas/gm-autoprep-hub:${AUTOPREP_VERSION:-latest}
     build: { context: ., dockerfile: hub/Dockerfile }
+    pull_policy: missing
     environment:
       AUTOPREP_TOKEN: ${AUTOPREP_TOKEN:-}          # leave empty to generate one in the volume
     ports: ["${AUTOPREP_PORT:-30777}:30777"]
@@ -13,7 +16,9 @@ services:
     restart: unless-stopped
 
   automation:
+    image: ghcr.io/moderncanvas/gm-autoprep-automation:${AUTOPREP_VERSION:-latest}
     build: { context: ., dockerfile: automation/Dockerfile }
+    pull_policy: missing
     depends_on: [hub]
     environment:
       FOUNDRY_URL: ${FOUNDRY_URL:-http://host.docker.internal:30000}

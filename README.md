@@ -101,7 +101,7 @@ itself is simplest):
 ```bash
 git clone https://github.com/moderncanvas/gm-autoprep && cd gm-autoprep
 cp .env.example .env          # set FOUNDRY_URL, AUTOPREP_USER, AUTOPREP_PASSWORD
-docker compose up -d --build
+docker compose up -d          # pre-built images for amd64 and arm64 (Raspberry Pi, Apple Silicon)
 docker compose exec hub cat /data/token
 ```
 

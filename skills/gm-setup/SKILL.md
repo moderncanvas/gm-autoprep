@@ -10,6 +10,8 @@ you can't discover. Keep questions batched — one round, not a drip.
 
 ## 1. Connection
 
+0. **Does this campaign use Foundry?** If not (or its system isn't on Foundry yet), set
+   `foundry.enabled: false` and skip to step 3 — everything except the build works without it.
 1. Call `foundry_status`.
    - **Tool missing** → the plugin's MCP server didn't start. Tell the GM to run
      `node <plugin>/mcp/start.mjs` once in a terminal to see the error (usually Node < 20).
@@ -28,13 +30,22 @@ you can't discover. Keep questions batched — one round, not a drip.
 
 - **New campaign:** copy `vault-template/` from the plugin to where the GM wants it (ask once; suggest
   a folder they already sync). Never overwrite an existing folder.
-- **Existing notes:** don't restructure them. Add `campaign.yaml` and the three `00-Meta/` files
-  beside what's there, and record in `campaign.yaml` where their recaps/NPCs/locations actually live
-  if the layout differs (add a `paths:` block).
+- **Existing vault:** don't restructure or rename anything. Add `campaign.yaml` beside what's there
+  and point it at what already exists:
+  - `paths` — where sessions, recaps, NPCs, locations and assets really live, and the brief (an existing
+    `CLAUDE.md` or campaign overview works). Only create the plant ledger / revelation sequence if the
+    vault has nothing that does that job.
+  - `system.reference` — the vault's rules notes (a quick reference, running-the-game notes).
+  - `log.template` — the vault's own session template, if it has one.
+  - `log.ledgers` — every running-state note (clocks, reputation, loot, house rules).
+  - `log.procedure` — a note or template that already lists after-session steps.
+  - `log.evidence` — other records of play (a DM screen, a combat tracker's state file, a bot's log):
+    ask what each is trustworthy for.
+  - `log.ask` — anything the system needs from the GM that no record holds (e.g. real hours played).
 
 ## 3. campaign.yaml — fill it from evidence first
 
-- `foundry.world`, `campaign.system`: from `foundry_status`.
+- `foundry.world`, `campaign.system`: from `foundry_status` — or, without Foundry, from the vault and the GM.
 - `table.players`: from `foundry_list_actors {type: "character"}` + `foundry_list_users`, then
   Archivist characters if present. Pronouns: only what the GM states; otherwise they/them.
 - `campaign.party_level`: from the character sheets.

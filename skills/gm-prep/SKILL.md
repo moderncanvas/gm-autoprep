@@ -7,21 +7,25 @@ description: Next-session prep for a GM AutoPrep campaign — writes a scene-by-
 
 Default: write the prep doc, then build every asset it needs, without stopping between steps.
 `campaign.yaml` → `prep.build_automatically: false` means stop after the doc and offer the build.
+**`foundry.enabled: false`** means there's nothing to build into: write the doc, put art and handouts in
+`<paths.assets>` for the GM to use however they run the game, and skip step 2's Foundry parts.
 
 **Guardrail:** before building, call `foundry_list_users`. If any user in
 `campaign.yaml → foundry.player_users` (or any non-GM) is logged in, **a session may be live — stop
 and ask.** Never build during play.
 
 ## 0. Load the campaign
-Read `campaign.yaml`, `00-Meta/Campaign Brief.md`, the latest recap, the latest prep doc, the
-Plant-Payoff Ledger, the Revelation Sequence, the current arc note, and the planned session note if
-one exists (the latest prep doc beats an older plan). If the last session hasn't been logged, run
-`/gm-log` first.
+Read `campaign.yaml` and everything it points to: the brief (`paths.brief`), the latest recap and prep
+doc, the plant ledger (`paths.plants`), the revelation sequence (`paths.revelations`, if the vault has one), every `log.ledgers`
+note, the current arc note, the planned session note if one exists (the latest prep doc beats an older
+plan), and **the `system.reference` rules notes** — never assume D&D. If the last session hasn't been
+logged, run `/gm-log` first.
 
-Check the party's **actual level** from the sheets (`foundry_list_actors {type:"character"}`).
+Check the party's **actual level** — from the sheets (`foundry_list_actors {type:"character"}`), or the
+vault's character notes when there's no Foundry.
 
 ## 1. Write the prep doc
-`01-Sessions/Prep/Session NN Prep.md`, following `Templates/Session Prep.md`, and show it in the
+`<paths.prep>/Session NN Prep.md` (create the folder if it's missing), following the vault's `Templates/Session Prep.md` — or, if the vault has none, the plugin's `vault-template/Templates/Session Prep.md`, and show it in the
 conversation. What makes it good:
 
 - **Open with what changed** since the last plan and why it reshapes this session.
@@ -32,8 +36,9 @@ conversation. What makes it good:
   (the captive's family is the family the party saves, on the ally's street where the overdue clue
   lives). Look for it before writing scenes.
 - **Re-route anything deferred twice** into a scene that cannot be cut.
-- **Encounters at the party's real level** — see `references/<system>.md` (e.g. `dnd5e.md`) for
-  budgets. Under-tuned boss → retune it (HP, AC, attacks, regeneration) and give the fight an
+- **Encounters at the party's real level** — size them the way *this system* does: `system.reference`
+  and `system.encounters` first, the plugin's `references/<system>.md` (e.g. `dnd5e.md`) only if the vault
+  says nothing. Under-tuned boss → retune it (HP, AC, attacks, regeneration) and give the fight an
   **objective** (someone to stop, a clock) plus a **clock rule** to end it early if time runs short.
 - **Respect the Revelation Sequence and `prep.pacing_rules`.** List what must NOT be delivered, with
   the session it's due.
@@ -56,7 +61,7 @@ conversation. What makes it good:
 4. **Handouts** — `foundry_create_journal` with an image page and a transcript + GM-note page.
 5. **Sync and verify** — `foundry_sync_scene_tokens` on every scene whose actors got new tokens; then
    re-list actors and scenes and confirm counts, portraits and `shell: false`.
-6. **Keep the art** — save sources to `08-Assets/` (Portraits, Handouts, Maps) and update the prep
+6. **Keep the art** — save sources to `<paths.assets>/` (Portraits, Handouts, Maps) and update the prep
    doc's scene names and readiness table to BUILT.
 
 ## 3. Report

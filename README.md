@@ -14,7 +14,7 @@ Obsidian vault, checks what's been planted and what's due to pay off, writes a
 scene-by-scene prep doc — and then builds the session into Foundry: full NPC stat blocks,
 portraits and tokens, handouts, and battle maps with walls, doors, windows and lights.
 
-> **Status: early (0.2).** Everything below works and is used on a real campaign, but expect
+> **Status: early (0.3).** Everything below works and is used on a real campaign, but expect
 > rough edges. D&D 5e is the best-supported system so far.
 > See [Roadmap](#roadmap).
 
@@ -31,6 +31,23 @@ Three commands in Claude Code:
 Under them, 28 MCP tools that any MCP client can use directly: `foundry_*` (actors, compendium
 clones, scenes, journals, uploads, tokens, chat log), `map_*` (any map image → a scene — see
 [docs/MAPS.md](docs/MAPS.md)) and `archivist_*` (session recordings).
+
+## Any system — with or without Foundry
+
+Nothing in the skills assumes D&D. Your vault's `campaign.yaml` tells them how *your* game works:
+
+- **`system.reference`** — your own rules notes; they win over the built-in D&D reference. Levels from
+  time played, health as slots, difficulty by dungeon floor — whatever your system does.
+- **`foundry.enabled: false`** — no VTT (or no Foundry system for your game yet): recaps, ledgers and
+  prep docs still work, and art lands in your vault instead.
+- **`log.evidence`**, **`log.ask`**, **`log.ledgers`**, **`log.procedure`** — your other records of play (a
+  DM screen, a tracker's state file), the questions only you can answer (real hours played), every
+  running-state note to keep current, and your system's own after-session steps.
+- **`paths`** — adopt an existing vault as it is; `/gm-setup` maps it instead of moving anything.
+
+Tested by adopting a second, non-D&D campaign with its own vault layout, ledgers and live DM screen and
+no Foundry: a fresh session derived that system's difficulty formulas, levelling-by-hours and boss
+sizing entirely from the campaign's own notes.
 
 ## How it fits together
 
@@ -139,7 +156,9 @@ before exposing it further.
 5. ✅ Automation GM that stays logged in and configures itself, `docker compose up`, and one-link
    module install from GitHub releases
 6. Automatic first-pass wall detection for maps
-7. More systems: `references/<system>.md` for Pathfinder 2e and others (contributions welcome)
+7. ✅ Any system, with or without Foundry, via `campaign.yaml` (`system`, `log`, `paths`)
+8. Built-in references for more systems — `skills/gm-prep/references/<system>.md` for Pathfinder 2e and
+   others (contributions welcome; a campaign's own rules notes already work today)
 
 ## Rules of the road
 

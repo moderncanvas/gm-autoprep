@@ -15,13 +15,43 @@ table:                         # who plays whom. Pronouns default to they/them w
       class: ""
       pronouns: they/them
 
+system:                        # how the game works — the skills never assume D&D
+  reference: []                # vault notes with this system's rules, read before any rules or encounter work,
+                               # e.g. ["00-Rules/GM Quick Reference.md"]. They win over the plugin's built-in
+                               # references/<system>.md (which exists for dnd5e).
+  encounters: ""               # one line on how to size fights, if the reference doesn't say,
+                               # e.g. "difficulty scales with floor number; bosses get one action per PC"
+
 foundry:
+  enabled: true                # false = no VTT (or no Foundry system for this game yet): skip every build
+                               # step and work from the vault, recordings and any log.evidence sources
   world: ""                    # Foundry world id
   automation_user: ""          # the GM account the Campaign module serves from (see README)
   player_users: []             # Foundry user names of your players — prep never builds while one is logged in
 
 archivist:                     # optional — session recordings via https://myarchivist.ai
   campaign_id: ""              # the API key lives in ~/.gm-autoprep/config.json, never in the vault
+
+log:                           # what /gm-log gathers and updates after every session
+  template: ""                 # the vault's own session note template, if it has one (default Templates/Session Recap.md)
+  evidence: []                 # extra records of what happened at the table, and what each is trusted for, e.g.
+                               #   - source: "http://127.0.0.1:8787/api/state"
+                               #     trust: "mechanics — party, clock, damage, the encounter log"
+  ask: []                      # questions to ask the GM every time, e.g. "How many real hours did we play?"
+  ledgers: []                  # every ledger note to bring up to date, beyond the plant/payoff ledger
+  procedure: ""                # a vault note with the system's own after-session steps (levels, advancement, …),
+                               # followed after the recap is written
+
+paths:                         # only if your vault's layout differs from the template's
+  sessions: 01-Sessions
+  recaps: 01-Sessions/Recaps
+  prep: 01-Sessions/Prep
+  npcs: 02-NPCs
+  locations: 03-Locations
+  assets: 08-Assets
+  brief: 00-Meta/Campaign Brief.md
+  plants: 00-Meta/Plant-Payoff Ledger.md
+  revelations: 00-Meta/Revelation Sequence.md
 
 art:
   provider: codex              # codex (ChatGPT image model via the Codex CLI) | manual (you generate, the agent writes prompts) | none

@@ -1,0 +1,11 @@
+{
+  "name": "campaign-loop-hub",
+  "version": "0.1.0",
+  "description": "Forwards authenticated JSON-RPC calls from an AI agent to a Foundry VTT client running the campaign-loop module.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": { "campaign-loop-hub": "src/hub.mjs", "cl": "src/cli.mjs" },
+  "scripts": { "start": "node src/hub.mjs" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "ws": "^8.18.0" }
+}

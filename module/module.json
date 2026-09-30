@@ -1,0 +1,11 @@
+{
+  "id": "campaign-loop",
+  "title": "Campaign Loop",
+  "description": "Lets your AI prep assistant build into this world — NPCs from compendium stat blocks, scenes with walls and lights, journals, tokens and uploads — through a small authenticated hub. Typed calls only; no arbitrary code execution.",
+  "version": "0.1.0",
+  "authors": [{ "name": "Jeremy Wise" }],
+  "compatibility": { "minimum": "12", "verified": "14" },
+  "esmodules": ["scripts/main.js"],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "license": "MIT"
+}

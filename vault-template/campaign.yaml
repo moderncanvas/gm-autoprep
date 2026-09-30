@@ -1,0 +1,34 @@
+# GM AutoPrep campaign config — the skills read this first. Fill in what you know; leave the rest blank.
+campaign:
+  name: ""                     # e.g. "The Hollow King"
+  system: dnd5e                # Foundry system id (dnd5e, pf2e, …) — see skills/gm-prep/references/<system>.md
+  setting: ""                  # e.g. "Forgotten Realms, Sword Coast, 200 years after Phandelver"
+  tone: ""                     # e.g. "investigative horror; tragedy over villainy"
+  current_arc: ""              # e.g. "Arc 1 — Shadows Rising"
+  party_level: 1               # the skills re-check this against the Foundry sheets every run
+
+table:                         # who plays whom. Pronouns default to they/them when unknown.
+  gm: ""
+  players:
+    - player: ""
+      character: ""
+      class: ""
+      pronouns: they/them
+
+foundry:
+  world: ""                    # Foundry world id
+  automation_user: ""          # the GM account the Campaign module serves from (see README)
+  player_users: []             # Foundry user names of your players — prep never builds while one is logged in
+
+archivist:                     # optional — session recordings via https://myarchivist.ai
+  campaign_id: ""              # the API key lives in ~/.gm-autoprep/config.json, never in the vault
+
+art:
+  provider: codex              # codex (ChatGPT image model via the Codex CLI) | manual (you generate, the agent writes prompts) | none
+  style: "painterly dark fantasy, concept art, cinematic lighting"
+  never_say: []                # words image models get wrong — e.g. "tortle" (spell the anatomy out instead)
+
+prep:
+  build_automatically: true    # build NPCs, art, maps and handouts into Foundry as part of every prep run
+  session_length_hours: 4
+  pacing_rules: []             # campaign-specific rules, e.g. "the villain appears in person no earlier than session 23"

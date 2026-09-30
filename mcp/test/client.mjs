@@ -16,7 +16,7 @@ const call = async (name, args = {}) => {
   return r;
 };
 await call("foundry_status");
-await call("foundry_list_actors", { query: "Wompers" });
+await call("foundry_list_actors", { type: "npc" });
 await call("foundry_search_compendium", { query: "Cultist", limit: 4 });
 await call("foundry_query_chat", { since: "2026-09-09T23:00:00Z", until: "2026-09-10T02:00:00Z", limit: 3 });
 if (process.env.UPLOAD) await call("foundry_upload_file", { localPath: process.env.UPLOAD, folder: "assets/_cl-mcp-test" });

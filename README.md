@@ -14,92 +14,105 @@ Obsidian vault, checks what's been planted and what's due to pay off, writes a
 scene-by-scene prep doc — and then builds the session into Foundry: full NPC stat blocks,
 portraits and tokens, handouts, and battle maps with walls, doors, windows and lights.
 
-> **Status: early.** This repo holds the foundation — the Foundry module, the hub, the MCP
-> server that lets an AI agent work inside a world safely, and the map pipeline. The prep
-> skills and vault template are being extracted from a working personal setup next.
+> **Status: early (0.1).** Everything below works and is used on a real campaign, but expect
+> rough edges. D&D 5e is the best-supported system so far.
 > See [Roadmap](#roadmap).
+
+## What a GM gets
+
+Three commands in Claude Code:
+
+| Command | When | What it does |
+|---|---|---|
+| `/gm-setup` | once | Connects to your Foundry, creates (or adopts) your campaign vault, fills `campaign.yaml` from your world and recordings, and writes a one-page Campaign Brief with you |
+| `/gm-log` | after a session | Reads the recording summary, the Foundry chat log and the world, and writes the recap: what happened, what was planned but didn't, open threads, bookkeeping flags. Updates the plant/payoff ledger |
+| `/gm-prep` | before a session | Writes a scene-by-scene prep doc (running order, cut order, the things that must land, encounters rebalanced for the party's *real* level), then builds it into Foundry: full NPC stat blocks, portraits and tokens, handouts, and battle maps with walls, doors, windows, lights and hidden tokens |
+
+Under them, 28 MCP tools that any MCP client can use directly: `foundry_*` (actors, compendium
+clones, scenes, journals, uploads, tokens, chat log), `map_*` (any map image → a scene — see
+[docs/MAPS.md](docs/MAPS.md)) and `archivist_*` (session recordings).
 
 ## How it fits together
 
 ```
- Claude (Code / Desktop / API)                        Foundry VTT
-   └─ skills + MCP server ──HTTP──► hub ◄──WebSocket── gm-autoprep module
-        │                          (next to Foundry)   (runs in one GM client,
-        ├─ Obsidian vault (markdown)                    dials out — no open port)
-        ├─ Archivist API (session recordings)
-        └─ image provider (OpenAI / ComfyUI / …)
+ Claude Code + GM AutoPrep plugin                      Foundry VTT
+   ├─ skills  /gm-setup /gm-log /gm-prep
+   └─ MCP server ─────────HTTP──────► hub ◄──WebSocket── gm-autoprep module
+        ├─ your campaign vault (markdown / Obsidian)       (runs in one GM client,
+        ├─ Archivist (session recordings, optional)         dials out — no open port)
+        └─ image model (optional: ChatGPT via Codex, or you)
 ```
 
 | Piece | Folder | License |
 |---|---|---|
-| Foundry module — typed JSON-RPC methods for actors, compendium clones, scenes with walls/lights/tokens, journals, uploads, tokens, chat log | `module/` | MIT |
-| Hub — authenticated relay between agents and the one serving Foundry client | `hub/` | AGPL-3.0 |
-| MCP server — 24 tools (actors, compendium, scenes, journals, uploads, tokens, chat log, and the map pipeline) for Claude Code, Claude Desktop or any MCP client | `mcp/` | AGPL-3.0 |
-| Map pipeline — any map image → scene with walls, doors, windows, lights and hidden tokens | `mcp/src/maps.mjs`, [docs/MAPS.md](docs/MAPS.md) | AGPL-3.0 |
-| Protocol | `docs/PROTOCOL.md` | — |
+| Claude Code plugin — skills, and the MCP server wiring | `skills/`, `.claude-plugin/`, `.mcp.json` | AGPL-3.0 |
+| MCP server — 28 tools | `mcp/` | AGPL-3.0 |
+| Campaign vault template | `vault-template/` | MIT |
+| Foundry module — typed JSON-RPC methods | `module/` | MIT |
+| Hub — authenticated relay to the one serving Foundry client | `hub/` | AGPL-3.0 |
+| Protocol · map guide | [docs/PROTOCOL.md](docs/PROTOCOL.md) · [docs/MAPS.md](docs/MAPS.md) | — |
 
 Design choices worth knowing:
 
-- **No arbitrary code execution.** The module exposes typed methods only. Anyone can read the
-  whole API in `docs/PROTOCOL.md` and know exactly what the assistant can do to their world.
-- **Exactly one serving client.** Several GM clients never fight over the connection — the hub
-  accepts one and tells the rest to stand by quietly.
-- **The token never reaches players.** It is stored as a per-user setting on the automation
-  account (Foundry v13+).
-- **A read-only switch.** Turn off "Allow the assistant to change the world" and it can still
-  read actors, scenes and the chat log, but not change anything.
+- **No arbitrary code execution.** The module exposes typed methods only. Read
+  [docs/PROTOCOL.md](docs/PROTOCOL.md) and you know exactly what the assistant can do to your world.
+- **It never builds during play.** Prep checks who's logged in and stops if your players are.
+- **Scenes are created inactive and tokens hidden** — you decide what the table sees.
+- **Exactly one serving client.** Several GM clients never fight over the connection.
+- **The token never reaches players** (a per-user setting on the automation account), and a
+  read-only switch in the module settings turns off all changes.
 
-## Maps in one minute
+## Install
 
-Hand the agent a top-down map — AI-painted, bought, or your own — and ask for a scene. It calls
-`map_grid_crops` to read the map at pixel precision, writes a spec of every wall, door, window,
-light and token, shows you a `map_preview` overlay, and on your OK `map_import` builds the scene
-with the tokens hidden. Details and a prompt template for image models: [docs/MAPS.md](docs/MAPS.md).
+You need Foundry VTT v12+ (tested on v14.365 with dnd5e 5.3.3), Node 20+, and Claude Code.
 
-## Try the foundation (developers)
-
-Requires Foundry VTT v12+ (tested on v14.365 / dnd5e 5.3.3) and Node 20+ on the Foundry host.
+**1. On the machine that runs Foundry** — the hub and the module:
 
 ```bash
-# on the Foundry host
-cp -r module /path/to/foundrydata/Data/modules/gm-autoprep   # then restart Foundry
-sudo deploy/install-hub.sh "$PWD"                              # hub on 127.0.0.1:30777
+git clone https://github.com/moderncanvas/gm-autoprep && cd gm-autoprep
+cp -r module /path/to/foundrydata/Data/modules/gm-autoprep     # then restart Foundry
+sudo AUTOPREP_HOST=0.0.0.0 deploy/install-hub.sh "$PWD"          # omit AUTOPREP_HOST if Claude runs on this machine
 sudo cat /etc/gm-autoprep/token
 ```
 
-In the world: enable **GM AutoPrep**, set **Automation user** to the GM account that should
-serve (a dedicated headless GM is ideal), and — logged in as that user — paste the token.
+In your world: enable **GM AutoPrep**, set **Automation user** to the GM account that should serve
+(a dedicated GM account that stays logged in is ideal), and — logged in as that user — paste the token
+into the module settings.
+
+**2. On the machine where you run Claude Code:**
 
 ```bash
-node hub/src/cli.mjs status
-AUTOPREP_TOKEN_FILE=/etc/gm-autoprep/token node hub/src/cli.mjs actors.list '{"type":"npc"}'
-AUTOPREP_TOKEN_FILE=/etc/gm-autoprep/token node hub/test/smoke.mjs     # end-to-end, cleans up after itself
+mkdir -p ~/.gm-autoprep && chmod 700 ~/.gm-autoprep
+# paste the token into ~/.gm-autoprep/token, then chmod 600 it, and create ~/.gm-autoprep/config.json:
+#   { "hubUrl": "http://<foundry-host>:30777", "archivistApiKey": "<optional>" }
 ```
 
-### Connect Claude
+Then in Claude Code:
 
-```bash
-cd mcp && npm install
-# copy the hub token to ~/.gm-autoprep/token (chmod 600), then:
-claude mcp add gm-autoprep -s user -e AUTOPREP_URL=http://<foundry-host>:30777 -- node "$PWD/src/server.mjs"
+```
+/plugin marketplace add moderncanvas/gm-autoprep
+/plugin install gm-autoprep@gm-autoprep
 ```
 
-To reach the hub from another machine, install it with `AUTOPREP_HOST=0.0.0.0` (LAN only — put TLS
-in front before exposing it further). Every call still needs the token. Tools that change the
-world are annotated, and delete/overwrite tools are marked destructive, so clients can ask
-before running them.
+Restart Claude Code, open it in the folder where you want your campaign vault, and run `/gm-setup`.
+The MCP server installs its own dependencies on first start (about 20 seconds).
+
+The hub listens on your LAN when installed with `AUTOPREP_HOST=0.0.0.0`; every call needs the token.
+Put TLS in front before exposing it any further.
+
+**Check it all works:** `AUTOPREP_TOKEN_FILE=/etc/gm-autoprep/token node hub/test/smoke.mjs` on the
+Foundry host runs 23 end-to-end checks against your world and cleans up after itself.
 
 ## Roadmap
 
-1. ✅ Foundry module + hub + protocol, tested end to end on a live v14 world
-2. ✅ MCP server over the hub, so any MCP client (Claude Code, Claude Desktop) gets the tools
-3. Packaged headless automation client (a GM that stays logged in so the assistant works
-   when nobody has Foundry open)
-4. ✅ Map pipeline: any map image (AI-painted or bought) → walls, doors, windows, lights, preview,
-   import — see [docs/MAPS.md](docs/MAPS.md). Next: an automatic first-pass wall detector
-5. Campaign-agnostic prep skills + an Obsidian vault template (recaps, plant/payoff ledger,
-   revelation sequence, prep docs)
-6. Archivist integration, image-provider plug-ins, `docker compose up`
+1. ✅ Foundry module + hub + protocol
+2. ✅ MCP server
+3. ✅ Map pipeline — any map image → walls, doors, windows, lights, hidden tokens
+4. ✅ Claude Code plugin: `/gm-setup`, `/gm-log`, `/gm-prep` + campaign vault template + Archivist tools
+5. Packaged headless automation GM (so the assistant works when nobody has Foundry open) and
+   `docker compose up` for the Foundry-side pieces
+6. Automatic first-pass wall detection for maps
+7. More systems: `references/<system>.md` for Pathfinder 2e and others (contributions welcome)
 
 ## Rules of the road
 

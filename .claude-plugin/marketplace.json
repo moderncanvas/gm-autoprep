@@ -1,0 +1,15 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "gm-autoprep",
+  "description": "GM AutoPrep — AI session prep and automatic asset building for game masters.",
+  "owner": { "name": "Jeremy Wise", "url": "https://github.com/moderncanvas" },
+  "plugins": [
+    {
+      "name": "gm-autoprep",
+      "description": "Recaps, prep docs, and NPCs, tokens, handouts and battle maps built straight into Foundry VTT.",
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/moderncanvas/gm-autoprep"
+    }
+  ]
+}

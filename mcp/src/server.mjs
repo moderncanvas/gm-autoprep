@@ -11,10 +11,20 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import * as maps from "./maps.mjs";
+import { makeArchivist } from "./archivist.mjs";
 
-const HUB = (process.env.AUTOPREP_URL || "http://127.0.0.1:30777").replace(/\/$/, "");
-const TOKEN_FILE = process.env.AUTOPREP_TOKEN_FILE || path.join(os.homedir(), ".gm-autoprep", "token");
-const token = () => process.env.AUTOPREP_TOKEN || fs.readFileSync(TOKEN_FILE, "utf8").trim();
+// Settings: environment variables win, then ~/.gm-autoprep/config.json
+//   { "hubUrl": "http://<foundry-host>:30777", "archivistApiKey": "…" }
+const CONFIG_DIR = process.env.AUTOPREP_HOME || path.join(os.homedir(), ".gm-autoprep");
+const CONFIG = (() => { try { return JSON.parse(fs.readFileSync(path.join(CONFIG_DIR, "config.json"), "utf8")); } catch { return {}; } })();
+const HUB = (process.env.AUTOPREP_URL || CONFIG.hubUrl || "http://127.0.0.1:30777").replace(/\/$/, "");
+const TOKEN_FILE = process.env.AUTOPREP_TOKEN_FILE || path.join(CONFIG_DIR, "token");
+const token = () => {
+  if (process.env.AUTOPREP_TOKEN) return process.env.AUTOPREP_TOKEN;
+  try { return fs.readFileSync(TOKEN_FILE, "utf8").trim(); }
+  catch { throw new Error(`No hub token. Copy it from the Foundry host (/etc/gm-autoprep/token) to ${TOKEN_FILE}, or set AUTOPREP_TOKEN.`); }
+};
+const archivist = makeArchivist(() => process.env.ARCHIVIST_API_KEY || CONFIG.archivistApiKey);
 
 async function rpc(method, params = {}) {
   let r;
@@ -206,6 +216,21 @@ server.registerTool("map_import", {
     return text({ ...scene, background: up.path, size: `${c.W}x${c.H}`, imageBytes: buf.length });
   } catch (e) { return fail(e); }
 });
+
+// ---- archivist ----------------------------------------------------------------
+// Session recordings -> summaries, moments and characters. Read-only.
+const campaign = z.string().describe("Archivist campaign id (from the vault's campaign.yaml)");
+tool("archivist_list_sessions",
+  "List every recorded sitting in play order with its Archivist title and date. `sitting` is the chronological position — the campaign's own session numbers can differ (a session can span two sittings), so map them via the recaps' archivist-title.",
+  { campaignId: campaign }, ({ campaignId }) => archivist.sessions(campaignId), RO);
+tool("archivist_get_session", "Get one sitting's full Archivist summary and notes — the narrative source of truth for a recap.",
+  { campaignId: campaign, sessionId: z.string() }, ({ campaignId, sessionId }) => archivist.session(campaignId, sessionId), RO);
+tool("archivist_list_moments",
+  "List Archivist moments (labelled highlights), optionally for one sitting. Recent sittings often have none — say so in the recap rather than inventing them.",
+  { campaignId: campaign, sessionId: z.string().optional() },
+  ({ campaignId, sessionId }) => archivist.moments(campaignId, sessionId), RO);
+tool("archivist_list_characters", "List the characters Archivist knows about (PCs and NPCs), with player names and descriptions.",
+  { campaignId: campaign }, ({ campaignId }) => archivist.characters(campaignId), RO);
 
 // ---- chat -------------------------------------------------------------------
 tool("foundry_query_chat",

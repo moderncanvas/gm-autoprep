@@ -66,8 +66,8 @@ All coordinates are **original image pixels**, exactly what the crop labels show
 
 ```json
 {
-  "name": "Coldwater Lane",
-  "image": "/home/me/maps/coldwater-lane.png",
+  "name": "Harbor Street",
+  "image": "/srv/maps/harbor-street.png",
   "cols": 30, "grid": 96,
   "darkness": 0.35, "globalLight": true,
   "walls": [
@@ -81,7 +81,7 @@ All coordinates are **original image pixels**, exactly what the crop labels show
     { "at": [232, 282], "dim": 22, "bright": 8, "color": "#ff9b40", "alpha": 0.35, "animation": "torch" },
     { "at": [1385, 410], "dim": 30, "bright": 10, "color": "#2fe0c0", "alpha": 0.6, "animation": "pulse" }
   ],
-  "tokens": [ { "actor": "Brenna", "at": [700, 280] } ]
+  "tokens": [ { "actor": "Watch Captain", "at": [700, 280] } ]
 }
 ```
 

@@ -1,0 +1,16 @@
+#!/bin/bash
+# Blocks commits that would publish secrets, private campaign details or machine-local paths.
+# Private terms live in .git/info/private-terms (one regex per line, never committed).
+set -e
+files=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$files" ] && exit 0
+pat='[0-9a-f]{64}|sk-[A-Za-z0-9]{20,}|/home/[a-z]+/|/tmp/claude-|users\.noreply' 
+private=".git/info/private-terms"
+[ -f "$private" ] && pat="$pat|$(grep -v '^\s*$' "$private" | paste -sd'|')"
+hits=$(echo "$files" | xargs -d '\n' grep -nIE "$pat" -- 2>/dev/null | grep -v '^\.githooks/' | grep -vE 'noreply@anthropic\.com' || true)
+if [ -n "$hits" ]; then
+  echo "pre-commit: blocked — possible secret or private detail:" >&2
+  echo "$hits" | head -20 >&2
+  echo "Fix it, or add a deliberate exception by editing .githooks/pre-commit." >&2
+  exit 1
+fi

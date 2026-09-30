@@ -21,7 +21,7 @@ const COLORS = { wall: "#ff2828", window: "#00e6ff", door: "#ffdc00", secret: "#
 
 export const SPEC_HELP = `Map spec (all coordinates in ORIGINAL image pixels, as labelled on the grid crops):
 {
-  "name": "Coldwater Lane",                // scene name
+  "name": "Harbor Street",                // scene name
   "image": "/abs/path/map.png",            // local image file
   "cols": 30, "grid": 96,                  // map width in squares, px per square in Foundry (default 30, 96)
   "darkness": 0.3, "globalLight": true,    // optional scene lighting
@@ -31,7 +31,7 @@ export const SPEC_HELP = `Map spec (all coordinates in ORIGINAL image pixels, as
     { "from": [1362,505], "to": [1395,880], "type": "window" }   // any single segment, any angle
   ],
   "lights": [ { "at": [232,282], "dim": 22, "bright": 8, "color": "#ff9b40", "alpha": 0.35, "animation": "torch" } ],
-  "tokens": [ { "actor": "Brenna", "at": [700,280], "hidden": true } ]   // at = token CENTRE; hidden defaults to true
+  "tokens": [ { "actor": "Watch Captain", "at": [700,280], "hidden": true } ]   // at = token CENTRE; hidden defaults to true
 }
 Wall types: wall | window | door | secret | invisible | terrain. Water and pits get no walls.
 Dim/bright are in grid units (feet on a 5 ft grid).`;

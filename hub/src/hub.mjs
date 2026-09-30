@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// campaign-loop hub — forwards authenticated JSON-RPC calls to the one Foundry client
+// gm-autoprep hub — forwards authenticated JSON-RPC calls to the one Foundry client
 // connected over WebSocket. See docs/PROTOCOL.md.
 //
-// env: CL_PORT (30777)  CL_HOST (127.0.0.1)  CL_TOKEN  CL_DATA (~/.campaign-loop)  CL_TIMEOUT_MS (120000)
+// env: AUTOPREP_PORT (30777)  AUTOPREP_HOST (127.0.0.1)  AUTOPREP_TOKEN  AUTOPREP_DATA (~/.gm-autoprep)  AUTOPREP_TIMEOUT_MS (120000)
 
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -12,16 +12,16 @@ import path from "node:path";
 import { WebSocketServer } from "ws";
 
 const PROTOCOL = 0;
-const PORT = Number(process.env.CL_PORT || 30777);
-const HOST = process.env.CL_HOST || "127.0.0.1";
-const DATA = process.env.CL_DATA || path.join(os.homedir(), ".campaign-loop");
-const TIMEOUT = Number(process.env.CL_TIMEOUT_MS || 120000);
+const PORT = Number(process.env.AUTOPREP_PORT || 30777);
+const HOST = process.env.AUTOPREP_HOST || "127.0.0.1";
+const DATA = process.env.AUTOPREP_DATA || path.join(os.homedir(), ".gm-autoprep");
+const TIMEOUT = Number(process.env.AUTOPREP_TIMEOUT_MS || 120000);
 const MAX_BODY = 64 * 1024 * 1024; // room for base64 map uploads
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
 function loadToken() {
-  if (process.env.CL_TOKEN) return process.env.CL_TOKEN.trim();
+  if (process.env.AUTOPREP_TOKEN) return process.env.AUTOPREP_TOKEN.trim();
   fs.mkdirSync(DATA, { recursive: true, mode: 0o700 });
   const f = path.join(DATA, "token");
   if (!fs.existsSync(f)) {
@@ -154,4 +154,4 @@ setInterval(() => {
 }, 30000);
 wss.on("connection", (ws) => ws.on("pong", () => { if (active?.ws === ws) active.alive = true; }));
 
-server.listen(PORT, HOST, () => log(`campaign-loop hub listening on http://${HOST}:${PORT} (ws path /foundry)`));
+server.listen(PORT, HOST, () => log(`gm-autoprep hub listening on http://${HOST}:${PORT} (ws path /foundry)`));

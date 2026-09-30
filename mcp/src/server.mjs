@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-// campaign-loop MCP server — exposes a Foundry VTT world to MCP clients (Claude Code,
-// Claude Desktop, …) through the campaign-loop hub. See docs/PROTOCOL.md.
+// gm-autoprep MCP server — exposes a Foundry VTT world to MCP clients (Claude Code,
+// Claude Desktop, …) through the gm-autoprep hub. See docs/PROTOCOL.md.
 //
-// env: CL_URL (http://127.0.0.1:30777)   CL_TOKEN or CL_TOKEN_FILE (~/.campaign-loop/token)
+// env: AUTOPREP_URL (http://127.0.0.1:30777)   AUTOPREP_TOKEN or AUTOPREP_TOKEN_FILE (~/.gm-autoprep/token)
 
 import fs from "node:fs";
 import os from "node:os";
@@ -11,9 +11,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const HUB = (process.env.CL_URL || "http://127.0.0.1:30777").replace(/\/$/, "");
-const TOKEN_FILE = process.env.CL_TOKEN_FILE || path.join(os.homedir(), ".campaign-loop", "token");
-const token = () => process.env.CL_TOKEN || fs.readFileSync(TOKEN_FILE, "utf8").trim();
+const HUB = (process.env.AUTOPREP_URL || "http://127.0.0.1:30777").replace(/\/$/, "");
+const TOKEN_FILE = process.env.AUTOPREP_TOKEN_FILE || path.join(os.homedir(), ".gm-autoprep", "token");
+const token = () => process.env.AUTOPREP_TOKEN || fs.readFileSync(TOKEN_FILE, "utf8").trim();
 
 async function rpc(method, params = {}) {
   let r;
@@ -22,7 +22,7 @@ async function rpc(method, params = {}) {
       headers: { "content-type": "application/json", authorization: `Bearer ${token()}` },
       body: JSON.stringify({ method, params }) });
   } catch (e) {
-    throw new Error(`Cannot reach the campaign-loop hub at ${HUB} (${e.cause?.code ?? e.message}). Is it running, and is CL_URL right?`);
+    throw new Error(`Cannot reach the gm-autoprep hub at ${HUB} (${e.cause?.code ?? e.message}). Is it running, and is AUTOPREP_URL right?`);
   }
   const body = await r.json().catch(() => ({ error: { message: `hub returned HTTP ${r.status}` } }));
   if (body.error) throw new Error(body.error.message);
@@ -32,7 +32,7 @@ async function rpc(method, params = {}) {
 const text = (v) => ({ content: [{ type: "text", text: typeof v === "string" ? v : JSON.stringify(v, null, 2) }] });
 const fail = (e) => ({ isError: true, content: [{ type: "text", text: String(e.message ?? e) }] });
 
-const server = new McpServer({ name: "campaign-loop", version: "0.1.0" });
+const server = new McpServer({ name: "gm-autoprep", version: "0.1.0" });
 
 // tool(name, description, input shape, hub method or handler, annotations)
 function tool(name, description, shape, target, annotations = {}) {
@@ -53,7 +53,7 @@ tool("foundry_status",
   "Check the connection: whether the hub is up and which Foundry world, version, game system and automation user are connected. Call this first if anything fails.",
   {}, async () => {
     const s = await (await fetch(`${HUB}/status`)).json();
-    if (!s.client) return { hub: HUB, connected: false, hint: "The hub is running but no Foundry client is connected. Make sure the automation GM is logged in and the Campaign Loop module has the hub URL and token." };
+    if (!s.client) return { hub: HUB, connected: false, hint: "The hub is running but no Foundry client is connected. Make sure the automation GM is logged in and the GM AutoPrep module has the hub URL and token." };
     return { hub: HUB, connected: true, ...s.client, world: await rpc("world.info") };
   }, RO);
 

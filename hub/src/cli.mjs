@@ -1,23 +1,23 @@
 #!/usr/bin/env node
-// cl — call the campaign-loop hub from a shell.
+// autoprep — call the GM AutoPrep hub from a shell.
 //
-//   cl status
-//   cl <method> ['<json params>']        e.g.  cl actors.list '{"type":"npc"}'
-//   cl files.upload --file map.webp --path assets/maps
+//   autoprep status
+//   autoprep <method> ['<json params>']        e.g.  autoprep actors.list '{"type":"npc"}'
+//   autoprep files.upload --file map.webp --path assets/maps
 //
-// env: CL_URL (http://127.0.0.1:30777)  CL_TOKEN or CL_TOKEN_FILE (~/.campaign-loop/token)
+// env: AUTOPREP_URL (http://127.0.0.1:30777)  AUTOPREP_TOKEN or AUTOPREP_TOKEN_FILE (~/.gm-autoprep/token)
 
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-const URL_ = process.env.CL_URL || "http://127.0.0.1:30777";
-const token = () => process.env.CL_TOKEN ||
-  fs.readFileSync(process.env.CL_TOKEN_FILE || path.join(os.homedir(), ".campaign-loop", "token"), "utf8").trim();
+const URL_ = process.env.AUTOPREP_URL || "http://127.0.0.1:30777";
+const token = () => process.env.AUTOPREP_TOKEN ||
+  fs.readFileSync(process.env.AUTOPREP_TOKEN_FILE || path.join(os.homedir(), ".gm-autoprep", "token"), "utf8").trim();
 
 const [, , method, ...rest] = process.argv;
 if (!method) {
-  console.error("usage: cl status | cl <method> ['<json params>'] | cl files.upload --file <f> --path <dir>");
+  console.error("usage: autoprep status | autoprep <method> ['<json params>'] | autoprep files.upload --file <f> --path <dir>");
   process.exit(2);
 }
 

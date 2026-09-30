@@ -1,27 +1,27 @@
-// Campaign Loop — Foundry side. Connects OUT to the campaign-loop hub and serves typed
+// GM AutoPrep — Foundry side. Connects OUT to the gm-autoprep hub and serves typed
 // JSON-RPC methods (docs/PROTOCOL.md). No arbitrary code execution, by design.
 
-const ID = "campaign-loop";
+const ID = "gm-autoprep";
 const PROTOCOL = 0;
 const DEFAULT_PACK = "dnd5e.actors24";
 const READ_ONLY = new Set(["system.ping", "world.info", "users.list", "actors.list", "actors.get",
   "compendium.search", "scenes.list", "journal.list", "chat.query"]);
 
-const log = (...a) => console.log("Campaign Loop |", ...a);
+const log = (...a) => console.log("GM AutoPrep |", ...a);
 const setting = (k) => game.settings.get(ID, k);
 
 // ---------------------------------------------------------------------------
 // settings
 Hooks.once("init", () => {
   const major = Number(game.release?.generation ?? 12);
-  game.settings.register(ID, "hubUrl", { name: "CL.hubUrl.name", hint: "CL.hubUrl.hint",
+  game.settings.register(ID, "hubUrl", { name: "AUTOPREP.hubUrl.name", hint: "AUTOPREP.hubUrl.hint",
     scope: "world", config: true, type: String, default: "ws://127.0.0.1:30777/foundry", requiresReload: true });
-  game.settings.register(ID, "automationUser", { name: "CL.automationUser.name", hint: "CL.automationUser.hint",
+  game.settings.register(ID, "automationUser", { name: "AUTOPREP.automationUser.name", hint: "AUTOPREP.automationUser.hint",
     scope: "world", config: true, type: String, default: "", requiresReload: true });
   // v13+ has server-stored per-user settings; older cores fall back to this browser only.
-  game.settings.register(ID, "token", { name: "CL.token.name", hint: "CL.token.hint",
+  game.settings.register(ID, "token", { name: "AUTOPREP.token.name", hint: "AUTOPREP.token.hint",
     scope: major >= 13 ? "user" : "client", config: true, type: String, default: "", requiresReload: true });
-  game.settings.register(ID, "allowWrites", { name: "CL.allowWrites.name", hint: "CL.allowWrites.hint",
+  game.settings.register(ID, "allowWrites", { name: "AUTOPREP.allowWrites.name", hint: "AUTOPREP.allowWrites.hint",
     scope: "world", config: true, type: Boolean, default: true });
 });
 
@@ -74,7 +74,7 @@ async function onMessage(ws, raw) {
   try {
     const fn = METHODS[msg.method];
     if (!fn) throw rpcError(-32601, `Unknown method ${msg.method}`);
-    if (!READ_ONLY.has(msg.method) && !setting("allowWrites")) throw rpcError(-32001, "Writes are disabled in the Campaign Loop settings");
+    if (!READ_ONLY.has(msg.method) && !setting("allowWrites")) throw rpcError(-32001, "Writes are disabled in the GM AutoPrep settings");
     reply.result = (await fn(msg.params ?? {})) ?? null;
   } catch (e) {
     reply.error = { code: e.code ?? -32000, message: e.message ?? String(e) };

@@ -1,10 +1,10 @@
 {
-  "CL.hubUrl.name": "Hub URL",
-  "CL.hubUrl.hint": "WebSocket address of your campaign-loop hub, e.g. ws://127.0.0.1:30777/foundry",
-  "CL.automationUser.name": "Automation user",
-  "CL.automationUser.hint": "Only this GM user connects to the hub (normally a dedicated headless GM account). Leave blank to let any GM connect — the hub still allows only one at a time.",
-  "CL.token.name": "Hub token",
-  "CL.token.hint": "Paste the token from the hub's data directory. Stored for your user only; players never receive it.",
-  "CL.allowWrites.name": "Allow the assistant to change the world",
-  "CL.allowWrites.hint": "When off, the assistant can read (actors, scenes, chat) but not create, update, delete or upload anything."
+  "AUTOPREP.hubUrl.name": "Hub URL",
+  "AUTOPREP.hubUrl.hint": "WebSocket address of your gm-autoprep hub, e.g. ws://127.0.0.1:30777/foundry",
+  "AUTOPREP.automationUser.name": "Automation user",
+  "AUTOPREP.automationUser.hint": "Only this GM user connects to the hub (normally a dedicated headless GM account). Leave blank to let any GM connect — the hub still allows only one at a time.",
+  "AUTOPREP.token.name": "Hub token",
+  "AUTOPREP.token.hint": "Paste the token from the hub's data directory. Stored for your user only; players never receive it.",
+  "AUTOPREP.allowWrites.name": "Allow the assistant to change the world",
+  "AUTOPREP.allowWrites.hint": "When off, the assistant can read (actors, scenes, chat) but not create, update, delete or upload anything."
 }

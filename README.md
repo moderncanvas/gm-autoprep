@@ -1,6 +1,9 @@
-# campaign-loop *(working name)*
+# GM AutoPrep
 
-An open-source AI assistant for game masters that closes the loop:
+**AI session prep and automatic asset building for game masters.**
+
+GM AutoPrep lets a GM use AI to prepare for sessions and create the assets those sessions
+need, automatically, inside Foundry VTT. It closes the loop:
 
 **record the session → recap it → keep the campaign's memory → prep the next session → build
 it into Foundry VTT → play → record.**
@@ -20,7 +23,7 @@ portraits and tokens, handouts, and battle maps with walls, doors, windows and l
 
 ```
  Claude (Code / Desktop / API)                        Foundry VTT
-   └─ skills + MCP server ──HTTP──► hub ◄──WebSocket── campaign-loop module
+   └─ skills + MCP server ──HTTP──► hub ◄──WebSocket── gm-autoprep module
         │                          (next to Foundry)   (runs in one GM client,
         ├─ Obsidian vault (markdown)                    dials out — no open port)
         ├─ Archivist API (session recordings)
@@ -51,29 +54,29 @@ Requires Foundry VTT v12+ (tested on v14.365 / dnd5e 5.3.3) and Node 20+ on the 
 
 ```bash
 # on the Foundry host
-cp -r module /path/to/foundrydata/Data/modules/campaign-loop   # then restart Foundry
+cp -r module /path/to/foundrydata/Data/modules/gm-autoprep   # then restart Foundry
 sudo deploy/install-hub.sh "$PWD"                              # hub on 127.0.0.1:30777
-sudo cat /etc/campaign-loop/token
+sudo cat /etc/gm-autoprep/token
 ```
 
-In the world: enable **Campaign Loop**, set **Automation user** to the GM account that should
+In the world: enable **GM AutoPrep**, set **Automation user** to the GM account that should
 serve (a dedicated headless GM is ideal), and — logged in as that user — paste the token.
 
 ```bash
 node hub/src/cli.mjs status
-CL_TOKEN_FILE=/etc/campaign-loop/token node hub/src/cli.mjs actors.list '{"type":"npc"}'
-CL_TOKEN_FILE=/etc/campaign-loop/token node hub/test/smoke.mjs     # end-to-end, cleans up after itself
+AUTOPREP_TOKEN_FILE=/etc/gm-autoprep/token node hub/src/cli.mjs actors.list '{"type":"npc"}'
+AUTOPREP_TOKEN_FILE=/etc/gm-autoprep/token node hub/test/smoke.mjs     # end-to-end, cleans up after itself
 ```
 
 ### Connect Claude
 
 ```bash
 cd mcp && npm install
-# copy the hub token to ~/.campaign-loop/token (chmod 600), then:
-claude mcp add campaign-loop -s user -e CL_URL=http://<foundry-host>:30777 -- node "$PWD/src/server.mjs"
+# copy the hub token to ~/.gm-autoprep/token (chmod 600), then:
+claude mcp add gm-autoprep -s user -e AUTOPREP_URL=http://<foundry-host>:30777 -- node "$PWD/src/server.mjs"
 ```
 
-To reach the hub from another machine, install it with `CL_HOST=0.0.0.0` (LAN only — put TLS
+To reach the hub from another machine, install it with `AUTOPREP_HOST=0.0.0.0` (LAN only — put TLS
 in front before exposing it further). Every call still needs the token. Tools that change the
 world are annotated, and delete/overwrite tools are marked destructive, so clients can ask
 before running them.

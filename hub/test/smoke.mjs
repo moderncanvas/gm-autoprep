@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // End-to-end smoke test against a live world. Everything it creates is named "_cl-smoke…"
-// and deleted at the end.   usage: CL_TOKEN=… node test/smoke.mjs   (or CL_TOKEN_FILE)
+// and deleted at the end.   usage: AUTOPREP_TOKEN=… node test/smoke.mjs   (or AUTOPREP_TOKEN_FILE)
 import fs from "node:fs";
 import WebSocket from "ws";
 
-const URL_ = process.env.CL_URL || "http://127.0.0.1:30777";
-const TOKEN = process.env.CL_TOKEN || fs.readFileSync(process.env.CL_TOKEN_FILE || "/etc/campaign-loop/token", "utf8").trim();
+const URL_ = process.env.AUTOPREP_URL || "http://127.0.0.1:30777";
+const TOKEN = process.env.AUTOPREP_TOKEN || fs.readFileSync(process.env.AUTOPREP_TOKEN_FILE || "/etc/gm-autoprep/token", "utf8").trim();
 let failures = 0;
 const results = [];
 

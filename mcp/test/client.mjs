@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const client = new Client({ name: "cl-test", version: "0" });
+const client = new Client({ name: "autoprep-test", version: "0" });
 await client.connect(new StdioClientTransport({ command: "node", args: [path.join(here, "../src/server.mjs")], env: { ...process.env } }));
 const { tools } = await client.listTools();
 console.log(`${tools.length} tools:`, tools.map((t) => t.name + (t.annotations?.destructiveHint ? "!" : t.annotations?.readOnlyHint ? "" : "*")).join(" "));

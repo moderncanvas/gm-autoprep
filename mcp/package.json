@@ -1,11 +1,11 @@
 {
-  "name": "campaign-loop-mcp",
+  "name": "gm-autoprep-mcp",
   "version": "0.1.0",
-  "description": "MCP server exposing a Foundry VTT world (via the campaign-loop hub) to AI agents such as Claude Code and Claude Desktop.",
+  "description": "MCP server exposing a Foundry VTT world (via the gm-autoprep hub) to AI agents such as Claude Code and Claude Desktop.",
   "license": "AGPL-3.0-only",
   "type": "module",
   "bin": {
-    "campaign-loop-mcp": "src/server.mjs"
+    "gm-autoprep-mcp": "src/server.mjs"
   },
   "engines": {
     "node": ">=20"

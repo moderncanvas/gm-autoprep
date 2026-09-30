@@ -1,4 +1,4 @@
-# campaign-loop protocol (v0)
+# gm-autoprep protocol (v0)
 
 Two hops:
 
@@ -18,7 +18,7 @@ headless "automation" GM, but can be the DM's own browser.
 ## Auth
 
 One shared secret, the **hub token** (32 random bytes, hex). The hub reads it from
-`CL_TOKEN` or `<data dir>/token` (created on first start).
+`AUTOPREP_TOKEN` or `<data dir>/token` (created on first start).
 
 - API callers send `Authorization: Bearer <token>`.
 - The module sends it in its `hello` frame. The module stores it in a **user-scoped**

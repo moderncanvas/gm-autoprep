@@ -104,16 +104,21 @@ export async function renderScaled(spec, compiled, format = "webp") {
 }
 
 // ---- overlay preview -------------------------------------------------------------
-export async function preview(spec, { maxWidth = 1600 } = {}) {
+export async function preview(spec, { maxWidth = 1600, numbers = false } = {}) {
   const c = await compile(spec);
   const k = Math.min(1, maxWidth / c.W), w = Math.round(c.W * k), h = Math.round(c.H * k);
   const L = (v) => (v * k).toFixed(1);
   const lines = c.walls.map((x) => `<line x1="${L(x.c[0])}" y1="${L(x.c[1])}" x2="${L(x.c[2])}" y2="${L(x.c[3])}" stroke="${COLORS[x._type]}" stroke-width="5" stroke-linecap="round"/>`);
   const lights = c.data.lights.map((l) => `<circle cx="${L(l.x)}" cy="${L(l.y)}" r="7" fill="none" stroke="#fff" stroke-width="3"/>`);
   const toks = c.tokens.map((t) => `<rect x="${L(t.x)}" y="${L(t.y)}" width="${L(c.grid)}" height="${L(c.grid)}" fill="none" stroke="#00ff66" stroke-width="3"/><text x="${L(t.x) }" y="${(t.y * k - 4).toFixed(1)}" font-family="sans-serif" font-size="13" fill="#00ff66" stroke="#000" stroke-width="3" paint-order="stroke">${escapeXml(t.actor)}</text>`);
+  // Optional wall numbers (index into spec.walls) so a reviewer can say "remove 3, 7 and 12".
+  const nums = !numbers ? [] : (spec.walls ?? []).map((wl, i) => {
+    const mx = ((wl.from[0] + wl.to[0]) / 2) * c.scale * k, my = ((wl.from[1] + wl.to[1]) / 2) * c.scale * k;
+    return `<text x="${mx.toFixed(1)}" y="${(my + 5).toFixed(1)}" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="15" fill="#fff" stroke="#000" stroke-width="4" paint-order="stroke">${i}</text>`;
+  });
   const legend = Object.entries(COLORS).filter(([t]) => c.walls.some((x) => x._type === t))
     .map(([t, col], i) => `<rect x="10" y="${10 + i * 22}" width="18" height="6" fill="${col}"/><text x="34" y="${17 + i * 22}" font-family="sans-serif" font-size="14" fill="#fff" stroke="#000" stroke-width="3" paint-order="stroke">${t}</text>`);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${lines.join("")}${lights.join("")}${toks.join("")}${legend.join("")}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">${lines.join("")}${lights.join("")}${toks.join("")}${nums.join("")}${legend.join("")}</svg>`;
   const png = await sharp(spec.image).resize(w, h).composite([{ input: Buffer.from(svg) }]).jpeg({ quality: 82 }).toBuffer();
   const counts = c.walls.reduce((m, x) => ((m[x._type] = (m[x._type] ?? 0) + 1), m), {});
   return { image: png, summary: { name: spec.name, size: `${c.W}x${c.H}`, squares: `${c.W / c.grid}x${c.H / c.grid}`, walls: counts, lights: c.data.lights.length, tokens: c.tokens.length } };

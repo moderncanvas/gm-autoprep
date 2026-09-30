@@ -1,6 +1,6 @@
 {
   "name": "gm-autoprep-hub",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Forwards authenticated JSON-RPC calls from an AI agent to a Foundry VTT client running the gm-autoprep module.",
   "license": "AGPL-3.0-only",
   "type": "module",

@@ -5,15 +5,37 @@ model, from a map you bought, or from your own art. The agent does the tedious p
 every wall, door and window, places the lights, and puts the session's tokens down, hidden until
 you reveal them.
 
-It works in three MCP tools:
+It works in three MCP tools, plus an optional automatic first draft:
 
 | Step | Tool | What happens |
 |---|---|---|
 | 1. Look | `map_grid_crops` | The map comes back as zoomed tiles with a labelled pixel grid, so the agent can read exact coordinates off the image. |
+| 1b. Draft (optional) | `map_detect_walls` | A first draft of the walls, numbered for fast review — see below. |
 | 2. Trace + check | `map_preview` | The agent writes a spec. The tool draws it over the map (red walls, cyan windows, yellow doors, magenta secret doors, white light rings, green token squares) so both of you can check it. |
 | 3. Import | `map_import` | The tool upscales the map to your grid, uploads it, and creates the scene with its walls, lights and hidden tokens. It does not activate the scene. |
 
 Nothing touches your world until step 3.
+
+## A head start: automatic first draft
+
+`map_detect_walls` drafts the walls for you in under a second. It finds long straight strokes that are
+darker than their surroundings, joins them across door- and window-sized gaps, and hands back a spec plus
+a preview with **every wall numbered**, so reviewing is "delete 0–7 and 30–37" rather than tracing from
+nothing. Walls that connect to other walls come back as `walls`; floating ones as `candidates`.
+
+What to expect — measured against hand-traced maps:
+
+| Map | True wall length found | Share of what it draws that's a real wall |
+|---|---|---|
+| AI-painted night street, 17 wall runs | ~80% | ~45% |
+| AI-painted glass conservatory | ~50% | ~25% |
+| Dungeon Alchemist estate, 160 walls (not used for tuning) | ~50–60% | ~35% |
+
+So: a strong start on maps with drawn walls, and never finished work. It **doesn't see glass or pale walls**,
+it **draws furniture edges, floorboard seams, fences and the map's frame**, and it **proposes every gap as a
+door** — windows need retyping. The workflow is detect → delete the junk by number → add what's missing
+from `map_grid_crops` → fix opening types → `map_preview` → import. For small maps, tracing from the crops
+directly is often just as fast.
 
 ## Getting a good map from an image model
 

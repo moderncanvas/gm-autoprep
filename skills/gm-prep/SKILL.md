@@ -56,8 +56,9 @@ conversation. What makes it good:
    then `foundry_tokenize_actor` (one at a time).
 3. **Maps** for every location the party fights or explores in that has no suitable scene (check
    `foundry_list_scenes`; a scene is unsuitable if it lacks the set-piece the encounter needs).
-   Generate or take the map image, then `map_grid_crops` → spec → `map_preview` (look, fix, repeat)
-   → `map_import`. Place the session's tokens hidden. Method: the plugin's `docs/MAPS.md`.
+   Generate or take the map image, then `map_grid_crops` (and, for maps with many rooms,
+   `map_detect_walls` for a numbered first draft to prune) → spec → `map_preview` (look, fix, repeat)
+   → `map_import`. Never import a detected draft unreviewed. Place the session's tokens hidden. Method: the plugin's `docs/MAPS.md`.
 4. **Handouts** — `foundry_create_journal` with an image page and a transcript + GM-note page.
 5. **Sync and verify** — `foundry_sync_scene_tokens` on every scene whose actors got new tokens; then
    re-list actors and scenes and confirm counts, portraits and `shell: false`.

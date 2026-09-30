@@ -58,6 +58,13 @@ fs.writeFileSync(path.join(dir, "preview.jpg"), Buffer.from(prev.content[1].data
 const bad = await client.callTool({ name: "map_preview", arguments: { spec: { ...spec, walls: [{ from: [0, 0], to: [10, 10], openings: [{ at: [1, 2] }] }] } } });
 ok(bad.isError && /not horizontal or vertical/.test(bad.content[0].text), "a diagonal wall with openings is rejected with a clear message");
 
+const det = await client.callTool({ name: "map_detect_walls", arguments: { image: mapFile, cols: 12 } });
+const draft = det.isError ? null : JSON.parse(det.content[0].text.slice(det.content[0].text.indexOf("{")));
+const hLines = draft?.walls.filter((w) => w.from[1] === w.to[1]).map((w) => w.from[1]) ?? [];
+ok(!det.isError && det.content[1]?.type === "image", "map_detect_walls returns a draft spec and a numbered preview");
+ok(hLines.some((y) => Math.abs(y - 50) <= 6) && hLines.some((y) => Math.abs(y - 350) <= 6), `detected the north and south walls (horizontal lines at y=${hLines.join(",")})`);
+ok(draft?.walls.some((w) => w.from[0] === w.to[0] && Math.abs(w.from[0] - 300) <= 6), "detected the dividing wall");
+
 const imp = await client.callTool({ name: "map_import", arguments: { spec, folder: "assets/gm-autoprep-test", replace: true } });
 const r = imp.isError ? { error: imp.content[0].text } : JSON.parse(imp.content[0].text);
 ok(!imp.isError && r.walls === 9 && r.doors === 1 && r.lights === 1, `map_import created the scene: ${JSON.stringify(r)}`);

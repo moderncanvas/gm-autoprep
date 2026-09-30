@@ -1,6 +1,6 @@
 {
   "name": "gm-autoprep-automation",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Keeps a headless GM logged into Foundry VTT so GM AutoPrep works when nobody has Foundry open.",
   "license": "AGPL-3.0-only",
   "type": "module",

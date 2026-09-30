@@ -12,6 +12,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import * as maps from "./maps.mjs";
 import { makeArchivist } from "./archivist.mjs";
+import { detectWalls } from "./walls.mjs";
 
 // Settings: environment variables win, then ~/.gm-autoprep/config.json
 //   { "hubUrl": "http://<foundry-host>:30777", "archivistApiKey": "…" }
@@ -43,7 +44,7 @@ async function rpc(method, params = {}) {
 const text = (v) => ({ content: [{ type: "text", text: typeof v === "string" ? v : JSON.stringify(v, null, 2) }] });
 const fail = (e) => ({ isError: true, content: [{ type: "text", text: String(e.message ?? e) }] });
 
-const server = new McpServer({ name: "gm-autoprep", version: "0.3.0" });
+const server = new McpServer({ name: "gm-autoprep", version: "0.4.0" });
 
 // tool(name, description, input shape, hub method or handler, annotations)
 function tool(name, description, shape, target, annotations = {}) {
@@ -189,12 +190,31 @@ server.registerTool("map_grid_crops", {
   } catch (e) { return fail(e); }
 });
 
+server.registerTool("map_detect_walls", {
+  description: "Optional step 1b: a FIRST DRAFT of the walls, found automatically as long straight strokes darker than their surroundings. Returns a spec with `walls` (connected to other walls — likely real) and `candidates` (floating — often furniture edges, floorboard seams or shadows), plus a preview with every wall NUMBERED. Measured on real maps it finds roughly 50–80% of true wall length, and a third or more of what it draws is not a wall: it does not see glass or pale walls, and it cannot tell doors from windows (every gap is proposed as a door). Delete the false walls by number, add what's missing from map_grid_crops, fix opening types, then map_preview before importing. Never import a detected spec unreviewed.",
+  inputSchema: { image: z.string().describe("Absolute path to the map image"),
+    name: z.string().optional().describe("Scene name to put in the draft spec"),
+    cols: z.number().int().optional().describe("Map width in grid squares (default 30) — sets the expected wall and door sizes"),
+    ratio: z.number().optional().describe("Ink sensitivity: a pixel is wall ink at ≤ ratio × its neighbourhood's brightness (default 0.72; higher finds more, and more junk)"),
+    ink: z.enum(["dark", "light", "both"]).optional().describe("Wall strokes darker (default) or lighter than their surroundings") },
+  annotations: RO,
+}, async ({ image, name, cols, ratio, ink }) => {
+  try {
+    const d = await detectWalls(image, { cols, ratio, ink });
+    const spec = { name: name || "Untitled map", image, cols: cols ?? 30, grid: 96, walls: d.walls, lights: [], tokens: [] };
+    const r = await maps.preview(spec, { numbers: true });
+    return { content: [
+      { type: "text", text: `Draft: ${d.walls.length} walls (numbered in the preview) + ${d.candidates.length} floating candidates, ${d.stats.openings} proposed openings. Review before use.\n\n` + JSON.stringify({ ...spec, candidates: d.candidates }, null, 2) },
+      img(r.image)] };
+  } catch (e) { return fail(e); }
+});
+
 server.registerTool("map_preview", {
   description: "Step 2. Renders the spec over the map so you can check it: red walls, cyan windows, yellow doors, magenta secret doors, white rings for lights, green squares for tokens. Nothing is sent to Foundry. Expect a few doors or wall lines to be 10–15 px off on the first pass — fix and preview again.\n\n" + maps.SPEC_HELP,
-  inputSchema: specArg, annotations: RO,
+  inputSchema: { ...specArg, numbers: z.boolean().optional().describe("Label every wall with its index in spec.walls") }, annotations: RO,
 }, async (args) => {
   try {
-    const r = await maps.preview(readSpec(args));
+    const r = await maps.preview(readSpec(args), { numbers: args.numbers ?? false });
     return { content: [{ type: "text", text: JSON.stringify(r.summary, null, 2) }, img(r.image)] };
   } catch (e) { return fail(e); }
 });

@@ -14,7 +14,7 @@ Obsidian vault, checks what's been planted and what's due to pay off, writes a
 scene-by-scene prep doc — and then builds the session into Foundry: full NPC stat blocks,
 portraits and tokens, handouts, and battle maps with walls, doors, windows and lights.
 
-> **Status: early (0.3).** Everything below works and is used on a real campaign, but expect
+> **Status: early (0.4).** Everything below works and is used on a real campaign, but expect
 > rough edges. D&D 5e is the best-supported system so far.
 > See [Roadmap](#roadmap).
 
@@ -28,7 +28,7 @@ Three commands in Claude Code:
 | `/gm-log` | after a session | Reads the recording summary, the Foundry chat log and the world, and writes the recap: what happened, what was planned but didn't, open threads, bookkeeping flags. Updates the plant/payoff ledger |
 | `/gm-prep` | before a session | Writes a scene-by-scene prep doc (running order, cut order, the things that must land, encounters rebalanced for the party's *real* level), then builds it into Foundry: full NPC stat blocks, portraits and tokens, handouts, and battle maps with walls, doors, windows, lights and hidden tokens |
 
-Under them, 28 MCP tools that any MCP client can use directly: `foundry_*` (actors, compendium
+Under them, 29 MCP tools that any MCP client can use directly: `foundry_*` (actors, compendium
 clones, scenes, journals, uploads, tokens, chat log), `map_*` (any map image → a scene — see
 [docs/MAPS.md](docs/MAPS.md)) and `archivist_*` (session recordings).
 
@@ -63,7 +63,7 @@ sizing entirely from the campaign's own notes.
 | Piece | Folder | License |
 |---|---|---|
 | Claude Code plugin — skills, and the MCP server wiring | `skills/`, `.claude-plugin/`, `.mcp.json` | AGPL-3.0 |
-| MCP server — 28 tools | `mcp/` | AGPL-3.0 |
+| MCP server — 29 tools | `mcp/` | AGPL-3.0 |
 | Campaign vault template | `vault-template/` | MIT |
 | Foundry module — typed JSON-RPC methods | `module/` | MIT |
 | Hub — authenticated relay to the one serving Foundry client | `hub/` | AGPL-3.0 |
@@ -155,7 +155,7 @@ before exposing it further.
 4. ✅ Claude Code plugin: `/gm-setup`, `/gm-log`, `/gm-prep` + campaign vault template + Archivist tools
 5. ✅ Automation GM that stays logged in and configures itself, `docker compose up`, and one-link
    module install from GitHub releases
-6. Automatic first-pass wall detection for maps
+6. ✅ Automatic first-draft wall detection (`map_detect_walls`) — measured, honest numbers in [docs/MAPS.md](docs/MAPS.md)
 7. ✅ Any system, with or without Foundry, via `campaign.yaml` (`system`, `log`, `paths`)
 8. Built-in references for more systems — `skills/gm-prep/references/<system>.md` for Pathfinder 2e and
    others (contributions welcome; a campaign's own rules notes already work today)

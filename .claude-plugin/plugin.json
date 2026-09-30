@@ -1,6 +1,6 @@
 {
   "name": "gm-autoprep",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "AI session prep and automatic asset building for game masters: recaps from your recordings and Foundry chat log, scene-by-scene prep that respects your plants and reveals, and NPCs, tokens, handouts and battle maps built straight into Foundry VTT.",
   "author": {
     "name": "Jeremy Wise",

@@ -30,11 +30,12 @@ await check("system.ping", async () => { const r = await rpc("system.ping"); ass
 await check("world.info", async () => { const r = await rpc("world.info"); return `${r.world} · Foundry ${r.foundry} · ${r.system} ${r.systemVersion} · ${r.modules.length} modules`; });
 await check("users.list", async () => (await rpc("users.list")).map((u) => u.name + (u.active ? "*" : "")).join(", "));
 await check("actors.list", async () => { const r = await rpc("actors.list", { type: "npc" }); return `${r.length} NPCs, ${r.filter((a) => a.shell).length} empty shells`; });
-await check("actors.get", async () => { const r = await rpc("actors.get", { actor: "The Lieutenant" }); assert(r.system.attributes.hp.max === 150, "hp"); return `Lieutenant hp ${r.system.attributes.hp.max}`; });
+await check("actors.get", async () => { const first = (await rpc("actors.list"))[0]; if (!first) return "world has no actors";
+  const r = await rpc("actors.get", { actor: first.id }); assert(r._id === first.id, "wrong actor"); return `${r.name}: ${r.items.length} items`; });
 await check("compendium.search", async () => { const r = await rpc("compendium.search", { query: "goblin", limit: 5 }); assert(r.length, "no hits"); return r.map((x) => `${x.name} (${x.pack})`).slice(0, 3).join(", "); });
 await check("scenes.list", async () => `${(await rpc("scenes.list")).length} scenes`);
 await check("journal.list", async () => `${(await rpc("journal.list")).length} journals`);
-await check("chat.query", async () => `${(await rpc("chat.query", { since: "2026-09-09T00:00:00Z", until: "2026-09-10T12:00:00Z" })).length} messages on 9/9`);
+await check("chat.query", async () => `${(await rpc("chat.query", { limit: 50 })).length} recent messages`);
 
 let uploaded;
 await check("files.upload", async () => { uploaded = (await rpc("files.upload", { path: "assets/_cl-smoke", name: "pixel.png", base64: PNG, contentType: "image/png" })).path; return uploaded; });

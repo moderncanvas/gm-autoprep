@@ -43,7 +43,7 @@ Module → hub, first frame:
 
 ```json
 { "type": "hello", "token": "…", "protocol": 0, "module": "0.1.0",
-  "world": "the-hollow-king", "user": "Test Player",
+  "world": "my-campaign", "user": "Automation GM",
   "foundry": "14.365", "system": "dnd5e", "systemVersion": "5.3.3" }
 ```
 

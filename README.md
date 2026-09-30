@@ -11,9 +11,9 @@ Obsidian vault, checks what's been planted and what's due to pay off, writes a
 scene-by-scene prep doc — and then builds the session into Foundry: full NPC stat blocks,
 portraits and tokens, handouts, and battle maps with walls, doors, windows and lights.
 
-> **Status: early.** This repo currently holds the foundation — the Foundry module and the hub
-> that let an AI agent work inside a world safely. The agent skills, vault template, map
-> pipeline and MCP server are being extracted from a working personal setup next.
+> **Status: early.** This repo currently holds the foundation — the Foundry module, the hub
+> and the MCP server that let an AI agent work inside a world safely. The agent skills, vault
+> template and map pipeline are being extracted from a working personal setup next.
 > See [Roadmap](#roadmap).
 
 ## How it fits together
@@ -31,6 +31,7 @@ portraits and tokens, handouts, and battle maps with walls, doors, windows and l
 |---|---|---|
 | Foundry module — typed JSON-RPC methods for actors, compendium clones, scenes with walls/lights/tokens, journals, uploads, tokens, chat log | `module/` | MIT |
 | Hub — authenticated relay between agents and the one serving Foundry client | `hub/` | AGPL-3.0 |
+| MCP server — 21 tools (actors, compendium, scenes, journals, uploads, tokens, chat log) for Claude Code, Claude Desktop or any MCP client | `mcp/` | AGPL-3.0 |
 | Protocol | `docs/PROTOCOL.md` | — |
 
 Design choices worth knowing:
@@ -64,10 +65,23 @@ CL_TOKEN_FILE=/etc/campaign-loop/token node hub/src/cli.mjs actors.list '{"type"
 CL_TOKEN_FILE=/etc/campaign-loop/token node hub/test/smoke.mjs     # end-to-end, cleans up after itself
 ```
 
+### Connect Claude
+
+```bash
+cd mcp && npm install
+# copy the hub token to ~/.campaign-loop/token (chmod 600), then:
+claude mcp add campaign-loop -s user -e CL_URL=http://<foundry-host>:30777 -- node "$PWD/src/server.mjs"
+```
+
+To reach the hub from another machine, install it with `CL_HOST=0.0.0.0` (LAN only — put TLS
+in front before exposing it further). Every call still needs the token. Tools that change the
+world are annotated, and delete/overwrite tools are marked destructive, so clients can ask
+before running them.
+
 ## Roadmap
 
 1. ✅ Foundry module + hub + protocol, tested end to end on a live v14 world
-2. MCP server over the hub, so any MCP client (Claude Code, Claude Desktop) gets the tools
+2. ✅ MCP server over the hub, so any MCP client (Claude Code, Claude Desktop) gets the tools
 3. Packaged headless automation client (a GM that stays logged in so the assistant works
    when nobody has Foundry open)
 4. Map pipeline: any map image (AI-painted or bought) → walls, doors, windows, lights, preview,

@@ -1,0 +1,17 @@
+{
+  "name": "campaign-loop-mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing a Foundry VTT world (via the campaign-loop hub) to AI agents such as Claude Code and Claude Desktop.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "bin": {
+    "campaign-loop-mcp": "src/server.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "zod": "^4.6.5"
+  }
+}

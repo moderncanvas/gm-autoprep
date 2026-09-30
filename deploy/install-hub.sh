@@ -1,6 +1,8 @@
 #!/bin/bash
 # Install the campaign-loop hub as a systemd service next to Foundry.
-# usage: install-hub.sh <dir containing hub/>   (run as root on the Foundry host)
+# usage: [CL_HOST=0.0.0.0] install-hub.sh <dir containing hub/>   (run as root on the Foundry host)
+# CL_HOST defaults to 127.0.0.1; use 0.0.0.0 to reach the hub from other machines on your LAN
+# (every call still needs the token — put TLS in front of it before exposing it any further).
 set -e
 SRC=${1:-/opt/campaign-loop}
 cd "$SRC/hub" && npm install --omit=dev --silent
@@ -12,7 +14,7 @@ After=network.target foundryvtt.service
 
 [Service]
 Environment=CL_DATA=/etc/campaign-loop
-Environment=CL_HOST=127.0.0.1
+Environment=CL_HOST=${CL_HOST:-127.0.0.1}
 Environment=CL_PORT=30777
 ExecStart=/usr/bin/node $SRC/hub/src/hub.mjs
 Restart=always

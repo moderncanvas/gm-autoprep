@@ -10,6 +10,7 @@ import path from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import * as maps from "./maps.mjs";
 
 const HUB = (process.env.AUTOPREP_URL || "http://127.0.0.1:30777").replace(/\/$/, "");
 const TOKEN_FILE = process.env.AUTOPREP_TOKEN_FILE || path.join(os.homedir(), ".gm-autoprep", "token");
@@ -148,6 +149,63 @@ tool("foundry_upload_file",
     return rpc("files.upload", { path: folder, name: name || path.basename(localPath),
       base64: buf.toString("base64"), contentType: types[ext] || "application/octet-stream" });
   }, WRITE);
+
+// ---- maps -------------------------------------------------------------------
+// Any map image -> scene with walls, doors, windows, lights and hidden tokens.
+// Workflow: map_grid_crops (look) -> write a spec -> map_preview (check) -> map_import.
+const specArg = {
+  spec: obj().optional().describe("The map spec object (see map_preview's description)"),
+  specFile: z.string().optional().describe("Or: path to a JSON file holding the spec — handy while iterating"),
+};
+function readSpec({ spec, specFile }) {
+  if (spec) return spec;
+  if (specFile) return JSON.parse(fs.readFileSync(specFile, "utf8"));
+  throw new Error("Pass spec or specFile");
+}
+const img = (buf) => ({ type: "image", data: buf.toString("base64"), mimeType: "image/jpeg" });
+
+server.registerTool("map_grid_crops", {
+  description: "Step 1 of turning a map image into a Foundry scene. Returns the map split into zoomed tiles with a labelled pixel grid (thin lines every 25 px, magenta every 100 px, labels every 50 px) in ORIGINAL image coordinates. Look at them and trace wall centre-lines, door spans (the drawn door leaf) and window spans, lights and where tokens should stand, then write a spec for map_preview.",
+  inputSchema: { image: z.string().describe("Absolute path to the map image on this machine"),
+    rows: z.number().int().min(1).max(4).optional().describe("Tile rows (default 2)"),
+    cols: z.number().int().min(1).max(4).optional().describe("Tile columns (default 2)"),
+    step: z.number().int().optional().describe("Grid spacing in image px (default 25)") },
+  annotations: RO,
+}, async ({ image, rows, cols, step }) => {
+  try {
+    const r = await maps.gridCrops(image, { rows, cols, step });
+    return { content: [{ type: "text", text: `Image ${r.width}x${r.height}px, ${r.crops.length} tiles (labels are original image px):` },
+      ...r.crops.flatMap((c) => [{ type: "text", text: `tile x ${c.region[0]}–${c.region[2]}, y ${c.region[1]}–${c.region[3]}` }, img(c.image)])] };
+  } catch (e) { return fail(e); }
+});
+
+server.registerTool("map_preview", {
+  description: "Step 2. Renders the spec over the map so you can check it: red walls, cyan windows, yellow doors, magenta secret doors, white rings for lights, green squares for tokens. Nothing is sent to Foundry. Expect a few doors or wall lines to be 10–15 px off on the first pass — fix and preview again.\n\n" + maps.SPEC_HELP,
+  inputSchema: specArg, annotations: RO,
+}, async (args) => {
+  try {
+    const r = await maps.preview(readSpec(args));
+    return { content: [{ type: "text", text: JSON.stringify(r.summary, null, 2) }, img(r.image)] };
+  } catch (e) { return fail(e); }
+});
+
+server.registerTool("map_import", {
+  description: "Step 3. Upscales the map to the spec's grid, uploads it to the Foundry server and creates the scene with its walls, doors, windows, lights and tokens (tokens hidden by default so the GM reveals them). The scene is not activated for players.",
+  inputSchema: { ...specArg,
+    folder: z.string().optional().describe('Upload folder inside Foundry data (default "assets/maps")'),
+    replace: z.boolean().optional().describe("Delete an existing scene with the same name first") },
+  annotations: WRITE,
+}, async (args) => {
+  try {
+    const spec = readSpec(args);
+    const c = await maps.compile(spec);
+    const buf = await maps.renderScaled(spec, c, "webp");
+    const up = await rpc("files.upload", { path: args.folder || "assets/maps", name: `${maps.slug(spec.name)}.webp`,
+      base64: buf.toString("base64"), contentType: "image/webp" });
+    const scene = await rpc("scenes.create", { data: c.data, background: up.path, tokens: c.tokens, replace: args.replace ?? false });
+    return text({ ...scene, background: up.path, size: `${c.W}x${c.H}`, imageBytes: buf.length });
+  } catch (e) { return fail(e); }
+});
 
 // ---- chat -------------------------------------------------------------------
 tool("foundry_query_chat",

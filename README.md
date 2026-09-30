@@ -14,9 +14,9 @@ Obsidian vault, checks what's been planted and what's due to pay off, writes a
 scene-by-scene prep doc — and then builds the session into Foundry: full NPC stat blocks,
 portraits and tokens, handouts, and battle maps with walls, doors, windows and lights.
 
-> **Status: early.** This repo currently holds the foundation — the Foundry module, the hub
-> and the MCP server that let an AI agent work inside a world safely. The agent skills, vault
-> template and map pipeline are being extracted from a working personal setup next.
+> **Status: early.** This repo holds the foundation — the Foundry module, the hub, the MCP
+> server that lets an AI agent work inside a world safely, and the map pipeline. The prep
+> skills and vault template are being extracted from a working personal setup next.
 > See [Roadmap](#roadmap).
 
 ## How it fits together
@@ -34,7 +34,8 @@ portraits and tokens, handouts, and battle maps with walls, doors, windows and l
 |---|---|---|
 | Foundry module — typed JSON-RPC methods for actors, compendium clones, scenes with walls/lights/tokens, journals, uploads, tokens, chat log | `module/` | MIT |
 | Hub — authenticated relay between agents and the one serving Foundry client | `hub/` | AGPL-3.0 |
-| MCP server — 21 tools (actors, compendium, scenes, journals, uploads, tokens, chat log) for Claude Code, Claude Desktop or any MCP client | `mcp/` | AGPL-3.0 |
+| MCP server — 24 tools (actors, compendium, scenes, journals, uploads, tokens, chat log, and the map pipeline) for Claude Code, Claude Desktop or any MCP client | `mcp/` | AGPL-3.0 |
+| Map pipeline — any map image → scene with walls, doors, windows, lights and hidden tokens | `mcp/src/maps.mjs`, [docs/MAPS.md](docs/MAPS.md) | AGPL-3.0 |
 | Protocol | `docs/PROTOCOL.md` | — |
 
 Design choices worth knowing:
@@ -47,6 +48,13 @@ Design choices worth knowing:
   account (Foundry v13+).
 - **A read-only switch.** Turn off "Allow the assistant to change the world" and it can still
   read actors, scenes and the chat log, but not change anything.
+
+## Maps in one minute
+
+Hand the agent a top-down map — AI-painted, bought, or your own — and ask for a scene. It calls
+`map_grid_crops` to read the map at pixel precision, writes a spec of every wall, door, window,
+light and token, shows you a `map_preview` overlay, and on your OK `map_import` builds the scene
+with the tokens hidden. Details and a prompt template for image models: [docs/MAPS.md](docs/MAPS.md).
 
 ## Try the foundation (developers)
 
@@ -87,8 +95,8 @@ before running them.
 2. ✅ MCP server over the hub, so any MCP client (Claude Code, Claude Desktop) gets the tools
 3. Packaged headless automation client (a GM that stays logged in so the assistant works
    when nobody has Foundry open)
-4. Map pipeline: any map image (AI-painted or bought) → walls, doors, windows, lights, preview,
-   import
+4. ✅ Map pipeline: any map image (AI-painted or bought) → walls, doors, windows, lights, preview,
+   import — see [docs/MAPS.md](docs/MAPS.md). Next: an automatic first-pass wall detector
 5. Campaign-agnostic prep skills + an Obsidian vault template (recaps, plant/payoff ledger,
    revelation sequence, prep docs)
 6. Archivist integration, image-provider plug-ins, `docker compose up`
